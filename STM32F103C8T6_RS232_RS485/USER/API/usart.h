@@ -17,7 +17,7 @@
  *          主循环检测到 flag == 1 后取出数据并处理，处理完成后将结构体整体清零
  */
 typedef struct {
-	uint8_t buffer[USART1_BUFFER_SIZE];	// 数据接收缓冲区
+	uint8_t buffer[USART1_BUFFER_SIZE];	// 数据                                  接收缓冲区
 	uint8_t flag;						// 一帧数据接收完成标志位
 	uint16_t count;						// 已接收数据字节数
 } USARTRecvData;
