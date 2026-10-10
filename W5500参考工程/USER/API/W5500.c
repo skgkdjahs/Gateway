@@ -123,16 +123,55 @@ uint8_t W5500_SPI_ReadWriteByte(uint8_t data)
 }
 
 
+
 uint8_t W5500_ReadReg(uint16_t address)
 {
+    uint8_t data;
 
+    W5500_CS_LOW();
+
+    /* 发送 16 位地址，高字节在前 */
+    W5500_SPI_ReadWriteByte((uint8_t)(address >> 8));
+    W5500_SPI_ReadWriteByte((uint8_t)address);
+
+    /*
+     * 控制字节：
+     * BSB = 00000：公共寄存器区
+     * RWB = 1：读操作
+     * OM  = 00：可变长度数据模式
+     */
+    W5500_SPI_ReadWriteByte(0x04);
+
+    /* 读取一个字节 */
+    data = W5500_SPI_ReadWriteByte(0x00);
+
+    W5500_CS_HIGH();
+
+    return data;
 }
 
 
 void W5500_WriteReg(uint16_t address, uint8_t data)
 {
+    W5500_CS_LOW();
 
+    /* 发送 16 位地址，高字节在前 */
+    W5500_SPI_ReadWriteByte((uint8_t)(address >> 8));
+    W5500_SPI_ReadWriteByte((uint8_t)address);
+
+    /*
+     * BSB = 00000：公共寄存器区
+     * RWB = 0：写操作
+     * OM  = 00：可变长度数据模式
+     */
+    W5500_SPI_ReadWriteByte(0x00);
+
+    /* 写入一个字节 */
+    W5500_SPI_ReadWriteByte(data);
+
+    W5500_CS_HIGH();
 }
+
 
 
 

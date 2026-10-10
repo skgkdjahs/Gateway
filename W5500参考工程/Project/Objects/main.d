@@ -29,5 +29,8 @@
 .\objects\main.o: ..\LIB\inc\stm32f10x_wwdg.h
 .\objects\main.o: ..\LIB\inc\misc.h
 .\objects\main.o: ..\USER\API\delay.h
-.\objects\main.o: ..\USER\API\led.h
+.\objects\main.o: ..\USER\API\usart.h
+.\objects\main.o: D:\WORK\Keil\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\main.o: D:\WORK\Keil\ARM\ARMCC\Bin\..\include\string.h
+.\objects\main.o: D:\WORK\Keil\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\main.o: ..\USER\API\W5500.h
