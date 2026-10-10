@@ -728,7 +728,7 @@ I (..\LIB\inc\stm32f10x_tim.h)(0x6AC9DB1B)
 I (..\LIB\inc\stm32f10x_usart.h)(0x6AC9DB1B)
 I (..\LIB\inc\stm32f10x_wwdg.h)(0x6AC9DB1B)
 I (..\LIB\inc\misc.h)(0x6AC9DB1B)
-F (..\USER\main.c)(0x6AC9EB24)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\CMSIS -I ..\LIB\inc -I ..\LIB\src -I ..\Startup -I ..\USER -I ..\USER\API-I.\RTE\_Target_1-ID:\WORK\Keil\ARM\PACK\Keil\STM32F1xx_DFP\2.3.0\Device\Include-ID:\WORK\Keil\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DSTM32F10X_MD -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
+F (..\USER\main.c)(0x6AC9FD42)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\CMSIS -I ..\LIB\inc -I ..\LIB\src -I ..\Startup -I ..\USER -I ..\USER\API-I.\RTE\_Target_1-ID:\WORK\Keil\ARM\PACK\Keil\STM32F1xx_DFP\2.3.0\Device\Include-ID:\WORK\Keil\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DSTM32F10X_MD -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
 I (..\USER\stm32f10x.h)(0x6AC9DB1B)
 I (..\CMSIS\core_cm3.h)(0x6AC9DB1B)
 I (D:\WORK\Keil\ARM\ARMCC\include\stdint.h)(0x599ECD2E)
@@ -762,7 +762,7 @@ I (..\USER\API\usart.h)(0x6AC9DB1B)
 I (D:\WORK\Keil\ARM\ARMCC\include\stdio.h)(0x599ECD2C)
 I (D:\WORK\Keil\ARM\ARMCC\include\string.h)(0x599ECD2C)
 I (D:\WORK\Keil\ARM\ARMCC\include\stdarg.h)(0x599ECD2A)
-I (..\USER\API\W5500.h)(0x6AC9DB1B)
+I (..\USER\API\W5500.h)(0x6AC9FD26)
 F (..\USER\API\delay.c)(0x6AC9DB1B)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\CMSIS -I ..\LIB\inc -I ..\LIB\src -I ..\Startup -I ..\USER -I ..\USER\API-I.\RTE\_Target_1-ID:\WORK\Keil\ARM\PACK\Keil\STM32F1xx_DFP\2.3.0\Device\Include-ID:\WORK\Keil\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DSTM32F10X_MD -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o .\objects\delay.o --omf_browse .\objects\delay.crf --depend .\objects\delay.d)
 I (..\USER\API\delay.h)(0x6AC9DB1B)
 I (..\USER\stm32f10x.h)(0x6AC9DB1B)
@@ -891,8 +891,8 @@ I (D:\WORK\Keil\ARM\ARMCC\include\stdio.h)(0x599ECD2C)
 I (D:\WORK\Keil\ARM\ARMCC\include\string.h)(0x599ECD2C)
 I (D:\WORK\Keil\ARM\ARMCC\include\stdarg.h)(0x599ECD2A)
 F (..\USER\API\usart.h)(0x6AC9DB1B)()
-F (..\USER\API\W5500.c)(0x6AC9E0C1)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\CMSIS -I ..\LIB\inc -I ..\LIB\src -I ..\Startup -I ..\USER -I ..\USER\API-I.\RTE\_Target_1-ID:\WORK\Keil\ARM\PACK\Keil\STM32F1xx_DFP\2.3.0\Device\Include-ID:\WORK\Keil\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DSTM32F10X_MD -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o .\objects\w5500.o --omf_browse .\objects\w5500.crf --depend .\objects\w5500.d)
-I (..\USER\API\W5500.h)(0x6AC9DB1B)
+F (..\USER\API\W5500.c)(0x6AC9FD2E)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\CMSIS -I ..\LIB\inc -I ..\LIB\src -I ..\Startup -I ..\USER -I ..\USER\API-I.\RTE\_Target_1-ID:\WORK\Keil\ARM\PACK\Keil\STM32F1xx_DFP\2.3.0\Device\Include-ID:\WORK\Keil\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DSTM32F10X_MD -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o .\objects\w5500.o --omf_browse .\objects\w5500.crf --depend .\objects\w5500.d)
+I (..\USER\API\W5500.h)(0x6AC9FD26)
 I (..\USER\stm32f10x.h)(0x6AC9DB1B)
 I (..\CMSIS\core_cm3.h)(0x6AC9DB1B)
 I (D:\WORK\Keil\ARM\ARMCC\include\stdint.h)(0x599ECD2E)
@@ -922,3 +922,7 @@ I (..\LIB\inc\stm32f10x_usart.h)(0x6AC9DB1B)
 I (..\LIB\inc\stm32f10x_wwdg.h)(0x6AC9DB1B)
 I (..\LIB\inc\misc.h)(0x6AC9DB1B)
 I (..\USER\API\delay.h)(0x6AC9DB1B)
+I (..\USER\API\usart.h)(0x6AC9DB1B)
+I (D:\WORK\Keil\ARM\ARMCC\include\stdio.h)(0x599ECD2C)
+I (D:\WORK\Keil\ARM\ARMCC\include\string.h)(0x599ECD2C)
+I (D:\WORK\Keil\ARM\ARMCC\include\stdarg.h)(0x599ECD2A)

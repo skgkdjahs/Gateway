@@ -30,3 +30,7 @@
 .\objects\w5500.o: ..\LIB\inc\stm32f10x_wwdg.h
 .\objects\w5500.o: ..\LIB\inc\misc.h
 .\objects\w5500.o: ..\USER\API\delay.h
+.\objects\w5500.o: ..\USER\API\usart.h
+.\objects\w5500.o: D:\WORK\Keil\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\w5500.o: D:\WORK\Keil\ARM\ARMCC\Bin\..\include\string.h
+.\objects\w5500.o: D:\WORK\Keil\ARM\ARMCC\Bin\..\include\stdarg.h
