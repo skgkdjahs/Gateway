@@ -34,3 +34,4 @@
 .\objects\usart.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\usart.o: ..\USER\API\rs485.h
 .\objects\usart.o: ..\USER\API\delay.h
+.\objects\usart.o: ..\USER\API\led.h

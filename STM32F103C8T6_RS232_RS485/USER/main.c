@@ -14,11 +14,11 @@ int main(void)
 
 
 	
-
+LED_Config();
 	RS485_USART3_Init(115200);
 	
 
-	printf("11111\r\n");
+	printf("RS485正常\r\n");
 	while(1)
 	{
 		/*
@@ -31,7 +31,12 @@ int main(void)
 		Delay_nms(1000);
 
 		*/
-   RS485_ReceiveEcho();
+   /*
+		用于测试 PC调试助手 接收发数据
+		RS485_ReceiveEcho();
+		*/
+
+		RS485_ProcessCommand();
 
 	}
 	

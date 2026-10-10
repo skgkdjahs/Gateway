@@ -32,3 +32,4 @@
 .\objects\rs485.o: ..\USER\API\delay.h
 .\objects\rs485.o: D:\Keil5\ARM\ARMCC\Bin\..\include\string.h
 .\objects\rs485.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\rs485.o: ..\USER\API\led.h
