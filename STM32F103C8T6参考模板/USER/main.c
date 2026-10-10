@@ -1,13 +1,13 @@
 #include "stm32f10x.h"
 #include "delay.h"
 #include "led.h"
+#include "W5500.h"
 
 int main(void)
 {
-	
-	while(1)
-	{
-		
-	}
-	
+    W5500_Init();
+
+    while (1)
+    {
+    }
 }
