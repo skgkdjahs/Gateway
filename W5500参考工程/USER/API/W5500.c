@@ -2,6 +2,8 @@
 #include "delay.h"
 #include "usart.h"
 
+/***************************************SPI配置，寄存器读写，串口打印测试***************************************/
+
 /**
   * @brief  W5500 相关 GPIO 初始化
   *         PA0: RST  推挽输出
@@ -120,6 +122,31 @@ void W5500_Reset(void)
 /**
   * @brief  W5500 初始化（目前只做通信测试）
   */
+//void W5500_Init(void)
+//{
+//    uint8_t version;
+
+//    W5500_GPIO_Init();
+//    W5500_SPI1_Init();
+//    W5500_Reset();
+
+//    version = W5500_ReadReg(0x0039);  // VERSIONR 寄存器
+
+//    USART1_Printf("W5500 Version = 0x%02X\r\n", version);
+
+//    if (version == 0x04)
+//    {
+//        USART1_Printf("W5500 SPI Communication OK!\r\n");
+//    }
+//    else
+//    {
+//        USART1_Printf("W5500 SPI Communication Failed!\r\n");
+//    }
+//}
+
+/***************************************设置网络参数并读取回来验证****************************************/
+
+
 void W5500_Init(void)
 {
     uint8_t version;
@@ -128,19 +155,98 @@ void W5500_Init(void)
     W5500_SPI1_Init();
     W5500_Reset();
 
-    version = W5500_ReadReg(0x0039);  // VERSIONR 寄存器
-
+    version = W5500_ReadReg(0x0039);
     USART1_Printf("W5500 Version = 0x%02X\r\n", version);
 
-    if (version == 0x04)
-    {
-        USART1_Printf("W5500 SPI Communication OK!\r\n");
-    }
-    else
+    if (version != 0x04)
     {
         USART1_Printf("W5500 SPI Communication Failed!\r\n");
+        return;
     }
+
+    USART1_Printf("W5500 SPI Communication OK!\r\n");
+
+    // 设置网络参数
+    W5500_SetNetwork();
+    USART1_Printf("Network parameters set.\r\n");
+
+    // 读回验证
+    W5500_PrintNetwork();
 }
 
 
+/**
+  * @brief  写多个字节到 Common 寄存器
+  */
+void W5500_WriteBuf(uint16_t address, uint8_t *buf, uint16_t len)
+{
+    uint16_t i;
+
+    W5500_CS_LOW();
+    W5500_SPI_ReadWriteByte((uint8_t)(address >> 8));
+    W5500_SPI_ReadWriteByte((uint8_t)address);
+    W5500_SPI_ReadWriteByte(0x04);          // 写操作
+
+    for (i = 0; i < len; i++)
+    {
+        W5500_SPI_ReadWriteByte(buf[i]);
+    }
+    W5500_CS_HIGH();
+}
+
+/**
+  * @brief  从 Common 寄存器读多个字节
+  */
+void W5500_ReadBuf(uint16_t address, uint8_t *buf, uint16_t len)
+{
+    uint16_t i;
+
+    W5500_CS_LOW();
+    W5500_SPI_ReadWriteByte((uint8_t)(address >> 8));
+    W5500_SPI_ReadWriteByte((uint8_t)address);
+    W5500_SPI_ReadWriteByte(0x00);          // 读操作
+
+    for (i = 0; i < len; i++)
+    {
+        buf[i] = W5500_SPI_ReadWriteByte(0x00);
+    }
+    W5500_CS_HIGH();
+}
+
+/**
+  * @brief  设置网络参数
+  */
+void W5500_SetNetwork(void)
+{
+    uint8_t gateway[4] = {W5500_GATEWAY};
+    uint8_t subnet[4]  = {W5500_SUBNET};
+    uint8_t mac[6]     = {W5500_MAC};
+    uint8_t ip[4]      = {W5500_IP};
+
+    W5500_WriteBuf(0x0001, gateway, 4);   // GAR  网关
+    W5500_WriteBuf(0x0005, subnet,  4);   // SUBR 子网掩码
+    W5500_WriteBuf(0x0009, mac,     6);   // SHAR MAC
+    W5500_WriteBuf(0x000F, ip,      4);   // SIPR IP
+}
+
+/**
+  * @brief  读取并打印网络参数
+  */
+void W5500_PrintNetwork(void)
+{
+    uint8_t buf[6];
+
+    W5500_ReadBuf(0x000F, buf, 4);
+    USART1_Printf("IP  : %d.%d.%d.%d\r\n", buf[0], buf[1], buf[2], buf[3]);
+
+    W5500_ReadBuf(0x0001, buf, 4);
+    USART1_Printf("GW  : %d.%d.%d.%d\r\n", buf[0], buf[1], buf[2], buf[3]);
+
+    W5500_ReadBuf(0x0005, buf, 4);
+    USART1_Printf("MASK: %d.%d.%d.%d\r\n", buf[0], buf[1], buf[2], buf[3]);
+
+    W5500_ReadBuf(0x0009, buf, 6);
+    USART1_Printf("MAC : %02X:%02X:%02X:%02X:%02X:%02X\r\n",
+                  buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]);
+}
 
