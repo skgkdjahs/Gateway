@@ -8,35 +8,33 @@
 
 int main(void)
 {
+	u8 rxbuf[RS485RX_MAX];
+	u16 len;
 	NVIC_SetPriorityGrouping(NVIC_PriorityGroup_2);
 //	LED_Config();
 //	KEY_Config();
 
 
 	
-LED_Config();
+	LED_Config();
 	RS485_USART3_Init(115200);
 	
 
 	printf("RS485正常\r\n");
 	while(1)
 	{
-		/*
-		测试基础外设
-		LED_M0_Toggle();
-		Delay_nms(1000);
-		LED_LINK_Toggle();
-		Delay_nms(1000);
-		LED_M1_Toggle();
-		Delay_nms(1000);
 
-		*/
    /*
 		用于测试 PC调试助手 接收发数据
 		RS485_ReceiveEcho();
 		*/
 
-		RS485_ProcessCommand();
+		len = RS485_Receive(rxbuf,RS485RX_MAX-1);
+		
+		if(len > 0)
+		{
+			RS485_ProcessCommand(rxbuf, len);
+		}
 
 	}
 	

@@ -580,6 +580,16 @@
               <FileType>5</FileType>
               <FilePath>..\USER\API\usart.h</FilePath>
             </File>
+            <File>
+              <FileName>W5500.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\USER\API\W5500.c</FilePath>
+            </File>
+            <File>
+              <FileName>W5500.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\USER\API\W5500.h</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

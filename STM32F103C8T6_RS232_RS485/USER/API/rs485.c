@@ -68,7 +68,7 @@ void RS485_USART3_Init(u32 brr)
 
 void USART3_IRQHandler(void)
 {
-	u8 data =0;
+	u8 data ;
 	volatile u32 temp;
 	
 	//RXNE 接收到一个字节
@@ -76,12 +76,15 @@ void USART3_IRQHandler(void)
 	{
 		 data = USART_ReceiveData(USART3);
 		
-		//只有上一帧已被主循环处理，才继续存入新数据
+		/*
+		只有当前没有待处理帧时
+		才允许继续写入接收缓冲区
+		*/
 		if (RS485GetData.Rx_over == 0)
 		{
 			if (RS485GetData.Rx_count < RS485RX_MAX)
 			{
-				RS485GetData.RxBuf[RS485GetData.Rx_count++] = (u8)data;
+				RS485GetData.RxBuf[RS485GetData.Rx_count] = data;
 				RS485GetData.Rx_count++;
 			}
 			else
@@ -196,9 +199,13 @@ u16 RS485_Receive(u8 *buf, u16 maxlen)
 		return 0;
 	}
 	
-	primask = __get_PRIMASK();
-	__disable_irq();
+	primask = __get_PRIMASK(); //读取当前的全局中断屏蔽状态，并保存起来
+	__disable_irq();//设置 PRIMASK，屏蔽可配置优先级中断
 	
+	/*
+	这里 USART3等普通外设中断暂时不会进入对应的中断服务函数
+	以下的代码区域成为临界区
+	*/
 	len = RS485GetData.Rx_count;
 	
 	if(RS485GetData.Rx_error != 0)
@@ -210,7 +217,7 @@ u16 RS485_Receive(u8 *buf, u16 maxlen)
 		RS485GetData.Rx_error = 0;
 		RS485GetData.Rx_over = 0;
 		
-		__set_PRIMASK(primask);
+		__set_PRIMASK(primask);//恢复之前的保存的中断屏蔽状态
 		return 0;
 	}
 	
@@ -241,22 +248,9 @@ void RS485_ProcessCommand(u8 *buf, u16 len)
      return;
   }
 	
-	len = RS485GetData.Rx_count;
-	/*
-	确保缓冲区长度合法
-	*/
-	if(len >= RS485RX_MAX)
-	{
-			RS485_SendString("CMD TOO LONG\r\n");
-		
-		  RS485GetData.Rx_count = 0;
-      RS485GetData.Rx_over = 0;
+  /* 转为 C 字符串 */
+  buf[len] = '\0';
 
-      return ;
-	}
-	
-	buf[len] = '\0';
-	
 	/* 去除末尾 CR/LF 
 		因为 串口调试助手自动追加了回车换行，发送的命令可能是 LED_ON\r\n 而不是单纯的LED_ON
 	*/
@@ -269,19 +263,19 @@ void RS485_ProcessCommand(u8 *buf, u16 len)
 	用于测试 开关灯命令
 	*/
     /* LINK 灯 */
-    if (strcmp((char *)RS485GetData.RxBuf,
+    if (strcmp((char *)buf,
                "LED_LINK_ON") == 0)
     {
         LED_LINK_On();
         RS485_SendString("LED_LINK ON OK\r\n");
     }
-    else if (strcmp((char *)RS485GetData.RxBuf,
+    else if (strcmp((char *)buf,
                     "LED_LINK_OFF") == 0)
     {
         LED_LINK_Off();
         RS485_SendString("LED_LINK OFF OK\r\n");
     }
-    else if (strcmp((char *)RS485GetData.RxBuf,
+    else if (strcmp((char *)buf,
                     "LED_LINK_TOGGLE") == 0)
     {
         LED_LINK_Toggle();
@@ -289,19 +283,19 @@ void RS485_ProcessCommand(u8 *buf, u16 len)
     }
 
     /* M0 灯 */
-    else if (strcmp((char *)RS485GetData.RxBuf,
+    else if (strcmp((char *)buf,
                     "LED_M0_ON") == 0)
     {
         LED_M0_On();
         RS485_SendString("LED_M0 ON OK\r\n");
     }
-    else if (strcmp((char *)RS485GetData.RxBuf,
+    else if (strcmp((char *)buf,
                     "LED_M0_OFF") == 0)
     {
         LED_M0_Off();
         RS485_SendString("LED_M0 OFF OK\r\n");
     }
-    else if (strcmp((char *)RS485GetData.RxBuf,
+    else if (strcmp((char *)buf,
                     "LED_M0_TOGGLE") == 0)
     {
         LED_M0_Toggle();
@@ -309,19 +303,19 @@ void RS485_ProcessCommand(u8 *buf, u16 len)
     }
 
     /* M1 灯 */
-    else if (strcmp((char *)RS485GetData.RxBuf,
+    else if (strcmp((char *)buf,
                     "LED_M1_ON") == 0)
     {
         LED_M1_On();
         RS485_SendString("LED_M1 ON OK\r\n");
     }
-    else if (strcmp((char *)RS485GetData.RxBuf,
+    else if (strcmp((char *)buf,
                     "LED_M1_OFF") == 0)
     {
         LED_M1_Off();
         RS485_SendString("LED_M1 OFF OK\r\n");
     }
-    else if (strcmp((char *)RS485GetData.RxBuf,
+    else if (strcmp((char *)buf,
                     "LED_M1_TOGGLE") == 0)
     {
         LED_M1_Toggle();
@@ -331,9 +325,6 @@ void RS485_ProcessCommand(u8 *buf, u16 len)
 	{
 		RS485_SendString("UNKNOWN CMD\r\n");
 	}
-	    /* 处理完毕，准备接收下一帧 */
-   RS485GetData.Rx_count = 0;
-   RS485GetData.Rx_over = 0;
 }
 
 

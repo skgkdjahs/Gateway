@@ -1,24 +1,46 @@
+//#include "stm32f10x.h"
+//#include "delay.h"
+//#include "led.h"
+//#include "key.h"
+//#include "usart.h"
+
+//int main(void)
+//{
+
+//	while(1)
+//	{
+
+//	}
+//	
+//}
 #include "stm32f10x.h"
-#include "delay.h"
-#include "led.h"
-#include "key.h"
+#include "w5500.h"
 #include "usart.h"
 
-int main(void)
+/* 假设你已有 USART1_Init 和 printf 重定向 */
+
+int main(void)                                                                        
 {
-	NVIC_SetPriorityGrouping(NVIC_PriorityGroup_2);
-	LED_Config();
-	KEY_Config();
-	USART1_Config(115200);
-	while(1)
-	{
-		LED_M0_Toggle();
-		Delay_nms(1000);
-		LED_LINK_Toggle();
-		Delay_nms(1000);
-		LED_M1_Toggle();
-		Delay_nms(1000);
-		printf("11111\r\n");
-	}
-	
+    u8 version;
+
+    USART1_Config(115200);                                                                                                                                                                                                                                                                 
+    W5500_SPIInit();
+    W5500_RESET();
+
+    version = W5500_VersionGet();
+
+    printf("W5500 Version = 0x%02X\r\n", version);
+
+    if(version == 0x04)
+    {
+        printf("W5500 SPI OK!\r\n");
+    }
+    else
+    {
+        printf("W5500 SPI ERROR!\r\n");
+    }
+
+    while(1)
+    {
+    }
 }

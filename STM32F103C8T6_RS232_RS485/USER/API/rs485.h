@@ -22,9 +22,7 @@ extern volatile RS485_TypeDef RS485GetData;
 void RS485_USART3_Init(u32 brr);
 
 void RS485_SendByte(u8 data);
-
 void RS485_SendString(const char *str);
-
 void RS485_SendBuff(u8 *data,u16 len);
 
 /**
