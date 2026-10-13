@@ -4,12 +4,6 @@
 
 /***************************************SPI配置，寄存器读写，串口打印测试***************************************/
 
-/**
-  * @brief  W5500 相关 GPIO 初始化
-  *         PA0: RST  推挽输出
-  *         PA1: INT  浮空输入
-  *         PA4: CS   推挽输出
-  */
 void W5500_GPIO_Init(void)
 {
     GPIO_InitTypeDef GPIO_InitStructure;
@@ -31,12 +25,6 @@ void W5500_GPIO_Init(void)
     W5500_RST_HIGH();
 }
 
-/**
-  * @brief  SPI1 初始化
-  *         PA5: SCK
-  *         PA6: MISO
-  *         PA7: MOSI
-  */
 void W5500_SPI1_Init(void)
 {
     GPIO_InitTypeDef GPIO_InitStructure;
@@ -69,9 +57,6 @@ void W5500_SPI1_Init(void)
     SPI_Cmd(SPI1, ENABLE);
 }
 
-/**
-  * @brief  SPI 收发一个字节
-  */
 uint8_t W5500_SPI_ReadWriteByte(uint8_t data)
 {
     while (SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_TXE) == RESET);
@@ -81,9 +66,6 @@ uint8_t W5500_SPI_ReadWriteByte(uint8_t data)
     return SPI_I2S_ReceiveData(SPI1);
 }
 
-/**
-  * @brief  写 Common 寄存器
-  */
 void W5500_WriteReg(uint16_t address, uint8_t data)
 {
     W5500_CS_LOW();
@@ -94,9 +76,6 @@ void W5500_WriteReg(uint16_t address, uint8_t data)
     W5500_CS_HIGH();
 }
 
-/**
-  * @brief  读 Common 寄存器
-  */
 uint8_t W5500_ReadReg(uint16_t address)
 {
     uint8_t data;
@@ -136,10 +115,6 @@ void W5500_Reset(void)
 }
 
 
-
-/**
-  * @brief  W5500 初始化（目前只做通信测试）
-  */
 //void W5500_Init(void)
 //{
 //    uint8_t version;
@@ -193,9 +168,6 @@ void W5500_Init(void)
 }
 
 
-/**
-  * @brief  写多个字节到 Common 寄存器
-  */
 void W5500_WriteBuf(uint16_t address, uint8_t *buf, uint16_t len)
 {
     uint16_t i;
@@ -212,9 +184,6 @@ void W5500_WriteBuf(uint16_t address, uint8_t *buf, uint16_t len)
     W5500_CS_HIGH();
 }
 
-/**
-  * @brief  从 Common 寄存器读多个字节
-  */
 void W5500_ReadBuf(uint16_t address, uint8_t *buf, uint16_t len)
 {
     uint16_t i;
@@ -231,9 +200,6 @@ void W5500_ReadBuf(uint16_t address, uint8_t *buf, uint16_t len)
     W5500_CS_HIGH();
 }
 
-/**
-  * @brief  设置网络参数
-  */
 void W5500_SetNetwork(void)
 {
     uint8_t gateway[4] = {W5500_GATEWAY};
@@ -247,9 +213,6 @@ void W5500_SetNetwork(void)
     W5500_WriteBuf(0x000F, ip,      4);   // SIPR IP
 }
 
-/**
-  * @brief  读取并打印网络参数
-  */
 void W5500_PrintNetwork(void)
 {
     uint8_t buf[6];
