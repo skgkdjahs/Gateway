@@ -165,6 +165,9 @@ void W5500_Init(void)
 
     // ∂¡ªÿ—È÷§
     W5500_PrintNetwork();
+		
+		uint8_t phy = W5500_ReadReg(0x002E);
+    USART1_Printf("PHYCFGR = 0x%02X (LNK=%d)\r\n", phy, phy & 0x01);
 }
 
 
