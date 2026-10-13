@@ -64,7 +64,8 @@ void W5500_SPI1_Init(void)
     SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
     SPI_InitStructure.SPI_CRCPolynomial = 7;
     SPI_Init(SPI1, &SPI_InitStructure);
-
+		
+    SPI_NSSInternalSoftwareConfig(SPI1, SPI_NSSInternalSoft_Set);
     SPI_Cmd(SPI1, ENABLE);
 }
 
@@ -111,13 +112,30 @@ uint8_t W5500_ReadReg(uint16_t address)
 /**
   * @brief  硬件复位 W5500
   */
+//void W5500_Reset(void)
+//{
+//    W5500_RST_LOW();
+//    Delay_nms(10);
+//    W5500_RST_HIGH();
+//    Delay_nms(100);
+//}
+
 void W5500_Reset(void)
 {
+    // 硬件复位
     W5500_RST_LOW();
-    Delay_nms(10);
+    Delay_nms(50);          // 拉低时间加长
     W5500_RST_HIGH();
-    Delay_nms(100);
+    Delay_nms(200);         // 复位后等待时间加长
+
+    // 软件复位 Mode Register
+    W5500_WriteReg(0x0000, 0x80);   // MR = Soft Reset
+    Delay_nms(10);
+    W5500_WriteReg(0x0000, 0x00);   // 清除复位位
+    Delay_nms(10);
 }
+
+
 
 /**
   * @brief  W5500 初始化（目前只做通信测试）
@@ -250,3 +268,256 @@ void W5500_PrintNetwork(void)
                   buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]);
 }
 
+/***************************************实现 TCP Server，让电脑能连上板子并收发数据****************************************/
+
+uint8_t W5500_ReadSocketReg(uint16_t address)
+{
+    uint8_t data;
+    W5500_CS_LOW();
+    W5500_SPI_ReadWriteByte((uint8_t)(address >> 8));
+    W5500_SPI_ReadWriteByte((uint8_t)address);
+    W5500_SPI_ReadWriteByte(0x08);          // Socket0 寄存器 + 读
+    data = W5500_SPI_ReadWriteByte(0x00);
+    W5500_CS_HIGH();
+    return data;
+}
+
+void W5500_WriteSocketReg(uint16_t address, uint8_t data)
+{
+    W5500_CS_LOW();
+    W5500_SPI_ReadWriteByte((uint8_t)(address >> 8));
+    W5500_SPI_ReadWriteByte((uint8_t)address);
+    W5500_SPI_ReadWriteByte(0x0C);          // Socket0 寄存器 + 写
+    W5500_SPI_ReadWriteByte(data);
+    W5500_CS_HIGH();
+}
+
+
+void W5500_WriteSocketBuf(uint16_t address, uint8_t *buf, uint16_t len)
+{
+    uint16_t i;
+    W5500_CS_LOW();
+    W5500_SPI_ReadWriteByte((uint8_t)(address >> 8));
+    W5500_SPI_ReadWriteByte((uint8_t)address);
+    W5500_SPI_ReadWriteByte(0x14);          // Socket0 TX Buffer + 写
+    for (i = 0; i < len; i++)
+    {
+        W5500_SPI_ReadWriteByte(buf[i]);
+    }
+    W5500_CS_HIGH();
+}
+
+void W5500_ReadSocketBuf(uint16_t address, uint8_t *buf, uint16_t len)
+{
+    uint16_t i;
+    W5500_CS_LOW();
+    W5500_SPI_ReadWriteByte((uint8_t)(address >> 8));
+    W5500_SPI_ReadWriteByte((uint8_t)address);
+    W5500_SPI_ReadWriteByte(0x18);          // Socket0 RX Buffer + 读
+    for (i = 0; i < len; i++)
+    {
+        buf[i] = W5500_SPI_ReadWriteByte(0x00);
+    }
+    W5500_CS_HIGH();
+}
+
+
+void W5500_Socket_Close(void)
+{
+    W5500_WriteSocketReg(W5500_S0_CR, W5500_CR_CLOSE);
+    while (W5500_ReadSocketReg(W5500_S0_CR));   // 等待命令执行完成
+}
+
+
+uint8_t W5500_GetSocketStatus(void)
+{
+    return W5500_ReadSocketReg(W5500_S0_SR);
+}
+
+
+void W5500_Socket_TCP_Server(uint16_t port)
+{
+    W5500_Socket_Close();
+
+    // 设置为 TCP 模式
+    W5500_WriteSocketReg(W5500_S0_MR, 0x01);
+
+    // 设置端口
+    W5500_WriteSocketReg(W5500_S0_PORT0,     (port >> 8) & 0xFF);
+    W5500_WriteSocketReg(W5500_S0_PORT0 + 1,  port & 0xFF);
+
+    // 打开 Socket
+    W5500_WriteSocketReg(W5500_S0_CR, W5500_CR_OPEN);
+    while (W5500_ReadSocketReg(W5500_S0_CR));
+
+    Delay_nms(5);
+
+    if (W5500_GetSocketStatus() != W5500_SOCK_INIT)
+    {
+        USART1_Printf("Socket Open Failed!\r\n");
+        return;
+    }
+
+    // 开始监听
+    W5500_WriteSocketReg(W5500_S0_CR, W5500_CR_LISTEN);
+    while (W5500_ReadSocketReg(W5500_S0_CR));
+
+    USART1_Printf("TCP Server Listen on Port %d\r\n", port);
+}
+
+uint16_t W5500_GetTXFreeSize(void)
+{
+    uint16_t val = 0, val1 = 0;
+
+    do
+    {
+        val1  = W5500_ReadSocketReg(W5500_S0_TX_FSR0);
+        val1  = (val1 << 8) + W5500_ReadSocketReg(W5500_S0_TX_FSR0 + 1);
+
+        if (val1 != 0)
+        {
+            val  = W5500_ReadSocketReg(W5500_S0_TX_FSR0);
+            val  = (val << 8) + W5500_ReadSocketReg(W5500_S0_TX_FSR0 + 1);
+        }
+    } while (val != val1);
+
+    return val;
+}
+
+uint16_t W5500_GetRXReceivedSize(void)
+{
+    uint16_t val = 0, val1 = 0;
+
+    do
+    {
+        val1  = W5500_ReadSocketReg(W5500_S0_RX_RSR0);
+        val1  = (val1 << 8) + W5500_ReadSocketReg(W5500_S0_RX_RSR0 + 1);
+
+        if (val1 != 0)
+        {
+            val  = W5500_ReadSocketReg(W5500_S0_RX_RSR0);
+            val  = (val << 8) + W5500_ReadSocketReg(W5500_S0_RX_RSR0 + 1);
+        }
+    } while (val != val1);
+
+    return val;
+}
+
+void W5500_SendData(uint8_t *buf, uint16_t len)
+{
+    uint16_t offset;
+    uint16_t free_size;
+
+    // 等待发送缓冲区有足够空间
+    do
+    {
+        free_size = W5500_GetTXFreeSize();
+    } while (free_size < len);
+
+    // 获取当前写指针
+    offset  = W5500_ReadSocketReg(W5500_S0_TX_WR0);
+    offset  = (offset << 8) + W5500_ReadSocketReg(W5500_S0_TX_WR0 + 1);
+
+    // 写入数据到 TX Buffer
+    W5500_WriteSocketBuf(offset, buf, len);
+
+    // 更新写指针
+    offset += len;
+    W5500_WriteSocketReg(W5500_S0_TX_WR0,     (offset >> 8) & 0xFF);
+    W5500_WriteSocketReg(W5500_S0_TX_WR0 + 1,  offset & 0xFF);
+
+    // 发送命令
+    W5500_WriteSocketReg(W5500_S0_CR, W5500_CR_SEND);
+    while (W5500_ReadSocketReg(W5500_S0_CR));
+}
+
+uint16_t W5500_RecvData(uint8_t *buf, uint16_t maxlen)
+{
+    uint16_t rx_size;
+    uint16_t offset;
+
+    rx_size = W5500_GetRXReceivedSize();
+    if (rx_size == 0) return 0;
+    if (rx_size > maxlen) rx_size = maxlen;
+
+    // 获取当前读指针
+    offset  = W5500_ReadSocketReg(W5500_S0_RX_RD0);
+    offset  = (offset << 8) + W5500_ReadSocketReg(W5500_S0_RX_RD0 + 1);
+
+    // 从 RX Buffer 读取数据
+    W5500_ReadSocketBuf(offset, buf, rx_size);
+
+    // 更新读指针
+    offset += rx_size;
+    W5500_WriteSocketReg(W5500_S0_RX_RD0,     (offset >> 8) & 0xFF);
+    W5500_WriteSocketReg(W5500_S0_RX_RD0 + 1,  offset & 0xFF);
+
+    // 接收完成命令
+    W5500_WriteSocketReg(W5500_S0_CR, W5500_CR_RECV);
+    while (W5500_ReadSocketReg(W5500_S0_CR));
+
+    return rx_size;
+}
+
+void W5500_Process(void)
+{
+    static uint8_t last_status = 0xFF;
+    uint8_t status;
+    uint8_t buf[256];
+    uint16_t len;
+
+    status = W5500_GetSocketStatus();
+
+    // 状态发生变化时打印提示
+    if (status != last_status)
+    {
+        last_status = status;
+
+        switch (status)
+        {
+            case W5500_SOCK_CLOSED:
+                USART1_Printf("[Socket] CLOSED → 重新打开\r\n");
+                W5500_Socket_TCP_Server(5000);
+                break;
+
+            case W5500_SOCK_INIT:
+                USART1_Printf("[Socket] INIT\r\n");
+                break;
+
+            case W5500_SOCK_LISTEN:
+                USART1_Printf("[Socket] LISTEN (等待电脑连接...)\r\n");
+                break;
+
+            case W5500_SOCK_ESTABLISHED:
+                USART1_Printf("[Socket] ESTABLISHED (电脑已连接)\r\n");
+                break;
+
+            case W5500_SOCK_CLOSE_WAIT:
+                USART1_Printf("[Socket] CLOSE_WAIT → 关闭\r\n");
+                W5500_Socket_Close();
+                break;
+
+            default:
+                USART1_Printf("[Socket] Status = 0x%02X\r\n", status);
+                break;
+        }
+    }
+
+    // 已连接时处理数据回显
+    if (status == W5500_SOCK_ESTABLISHED)
+    {
+        len = W5500_GetRXReceivedSize();
+        if (len > 0)
+        {
+            len = W5500_RecvData(buf, sizeof(buf) - 1);
+            buf[len] = '\0';
+
+            // 串口打印收到的内容
+            USART1_Printf("Recv(%d): %s\r\n", len, buf);
+
+            // 回显给电脑
+            W5500_SendData(buf, len);
+            USART1_Printf("Echo OK\r\n");
+        }
+    }
+}

@@ -50,4 +50,42 @@ void W5500_ReadBuf(uint16_t address, uint8_t *buf, uint16_t len);
 void W5500_SetNetwork(void);
 void W5500_PrintNetwork(void);
 
+/***************************************实现 TCP Server，让电脑能连上板子并收发数据****************************************/
+
+// Socket 寄存器偏移（Socket 0）
+#define W5500_S0_MR         0x0000
+#define W5500_S0_CR         0x0001
+#define W5500_S0_IR         0x0002
+#define W5500_S0_SR         0x0003
+#define W5500_S0_PORT0      0x0004
+#define W5500_S0_TX_FSR0    0x0020
+#define W5500_S0_TX_RD0     0x0022
+#define W5500_S0_TX_WR0     0x0024
+#define W5500_S0_RX_RSR0    0x0026
+#define W5500_S0_RX_RD0     0x0028
+
+// Socket 命令 
+#define W5500_CR_OPEN       0x01
+#define W5500_CR_LISTEN     0x02
+#define W5500_CR_CLOSE      0x10
+#define W5500_CR_SEND       0x20
+#define W5500_CR_RECV       0x40
+
+// Socket 状态
+#define W5500_SOCK_CLOSED      0x00
+#define W5500_SOCK_INIT        0x13
+#define W5500_SOCK_LISTEN      0x14
+#define W5500_SOCK_ESTABLISHED 0x17
+#define W5500_SOCK_CLOSE_WAIT  0x1C
+
+// Socket 相关函数声明
+void     W5500_Socket_Close(void);
+uint8_t  W5500_GetSocketStatus(void);
+void     W5500_Socket_TCP_Server(uint16_t port);
+uint16_t W5500_GetTXFreeSize(void);
+uint16_t W5500_GetRXReceivedSize(void);
+void     W5500_SendData(uint8_t *buf, uint16_t len);
+uint16_t W5500_RecvData(uint8_t *buf, uint16_t maxlen);
+void     W5500_Process(void);
+
 #endif
